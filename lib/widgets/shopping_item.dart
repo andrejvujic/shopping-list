@@ -5,13 +5,16 @@ class ShoppingItem extends StatefulWidget {
   @override
   _ShoppingItemState createState() => _ShoppingItemState();
 
-  final String title, amount;
-  final Function delete;
-
+  final String title, amount, id;
+  final Function removeItem, markAsDone;
+  final bool done;
   ShoppingItem({
+    this.id,
     this.title,
     this.amount,
-    this.delete,
+    this.removeItem,
+    this.done,
+    this.markAsDone,
   });
 }
 
@@ -22,10 +25,14 @@ class _ShoppingItemState extends State<ShoppingItem>
   Animation _animation;
   Tween _tween;
   double _itemOpacity = 1.0, _checkmarkOpacity = 0.0, _horizontalOffset = 0.0;
-  bool _done = false;
 
   @override
   void initState() {
+    if (widget.done) {
+      _itemOpacity = 0.25;
+      _checkmarkOpacity = 1.0;
+    }
+
     _controller = AnimationController(
       duration: const Duration(
         milliseconds: 500,
@@ -45,7 +52,9 @@ class _ShoppingItemState extends State<ShoppingItem>
         ),
       )
       ..addStatusListener((AnimationStatus _status) {
-        if (_status == AnimationStatus.completed) widget.delete?.call();
+        if (_status == AnimationStatus.completed) {
+          widget.removeItem?.call();
+        }
       });
 
     _deleteItemAlert = YesNoAlert(
@@ -87,12 +96,17 @@ class _ShoppingItemState extends State<ShoppingItem>
               curve: Curves.easeInOut,
               child: MaterialButton(
                 onLongPress: () =>
-                    (_done) ? null : _deleteItemAlert.show(context),
-                onPressed: () => setState(() {
-                  _itemOpacity = ((_done) ? 1.0 : 0.25);
-                  _checkmarkOpacity = ((_done) ? 0.0 : 1.0);
-                  _done = !_done;
-                }),
+                    (widget.done) ? null : _deleteItemAlert.show(context),
+                onPressed: () {
+                  setState(() {
+                    _itemOpacity = ((widget.done) ? 1.0 : 0.25);
+                    _checkmarkOpacity = ((widget.done) ? 0.0 : 1.0);
+                  });
+                  widget.markAsDone?.call(
+                    widget.id,
+                    !widget.done,
+                  );
+                },
                 elevation: 0.0,
                 highlightElevation: 0.0,
                 hoverElevation: 0.0,
@@ -125,7 +139,7 @@ class _ShoppingItemState extends State<ShoppingItem>
                       ),
                     ),
                     IconButton(
-                      splashRadius: (_done) ? 0.5 : 20.0,
+                      splashRadius: (widget.done) ? 0.5 : 20.0,
                       highlightColor: Colors.grey.withOpacity(0.5),
                       icon: Icon(
                         Icons.delete,
@@ -133,7 +147,7 @@ class _ShoppingItemState extends State<ShoppingItem>
                         size: 30.0,
                       ),
                       onPressed: () =>
-                          (_done) ? null : _deleteItemAlert.show(context),
+                          (widget.done) ? null : _deleteItemAlert.show(context),
                     ),
                   ],
                 ),
