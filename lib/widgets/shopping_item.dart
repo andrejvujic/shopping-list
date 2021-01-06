@@ -142,7 +142,7 @@ class _ShoppingItemState extends State<ShoppingItem>
                       splashRadius: (widget.done) ? 0.5 : 20.0,
                       highlightColor: Colors.grey.withOpacity(0.5),
                       icon: Icon(
-                        Icons.delete,
+                        Icons.clear,
                         color: Colors.grey[800],
                         size: 30.0,
                       ),
